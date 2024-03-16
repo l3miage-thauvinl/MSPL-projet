@@ -1,0 +1,93 @@
+---
+title: "PROJET_PLATA_CORP"
+author: "Mona OSMAN,Alireza SEYF, Sami MANSOUR, Lola Tosetto"
+date: "2024-03-16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Existe-t-il une corrélation entre le taux de criminalité liée à la drogue et le taux liée à la violence ? Dans quelle mesure la criminalité liée à la drogue influence-t-elle la criminalité liée à la violence ?
+
+1-Chargement des packages
+```{r}
+
+library(readr)
+library(tidyverse)
+library(ggplot2)
+library(ggplot2)
+library(tidyr) # Pour pivot_longer
+
+```
+
+2-Chargement des Données
+```{r}
+Data <- read_delim("adult-arrests-by-county-beginning-1970.csv",delim=",")
+
+```
+NB: On s'assure bien du typage des données.
+
+```{r}
+names(Data)
+```
+On vérifie les types de données et les valeurs manquantes, et on crée deux nouvelles colonnes, en s'assurant du typage bla bla
+```{r}
+str(Data)
+summary(Data)
+donnees <- na.omit(Data) 
+
+donnees$drug_felony <- as.numeric(Data$"Drug Felony")
+donnees$violent_felony <- as.numeric(Data$"Violent Felony")
+
+```
+
+
+
+```{r}
+# Transformer les données au format long
+donnees_long <- pivot_longer(donnees,
+                             cols = c("drug_felony", "violent_felony"),
+                             names_to = "Type_of_Crime",
+                             values_to = "Count")
+donnees_long_sum <- aggregate(Count ~ Year + Type_of_Crime, data = donnees_long, sum)
+
+# Créer le graphique
+ggplot(donnees_long_sum, aes(x = Year, y = Count, color = Type_of_Crime)) +
+  geom_line() +
+  geom_point() +
+  theme_minimal() +
+  labs(title = "Nombre de délits liés à la drogue vs. délits violents par année",
+       x = "Année",
+       y = "Nombre de délits",
+       color = "Type de Crime")
+```
+pour l'analyse de ce graphe avant les annee 1990, o npeut dire qi'il n y pas bcp d'arrestations car pas bcp de pression sur la police de war on drugs.
+
+```{r}
+
+# Nuage de points pour visualiser la relation
+ggplot() + 
+  geom_point(data = donnees, aes(x = drug_felony, y = violent_felony, color = "red")) +
+  geom_smooth(data = donnees, aes(x = drug_felony, y = violent_felony), method = lm, se = FALSE) +
+  scale_color_manual(values = c("red")) +
+  theme_minimal()
+
+```
+Ligne de tendance (ligne bleue) : La ligne bleue représente la ligne de régression linéaire, qui est le meilleur ajustement linéaire pour les points de données. Elle indique la tendance générale des données : dans ce cas, une tendance positive indique que, généralement, à mesure que le nombre de délits liés à la drogue augmente, le nombre de délits violents tend également à augmenter
+
+
+```{r}
+cor.test(donnees$drug_felony, donnees$violent_felony)
+```
+Le coefficient de corrélation de Pearson est de 0.8754197. Cette valeur est très proche de 1, ce qui indique une forte corrélation positive entre les deux variables. La valeur p est inférieure à 2.2e-16, ce qui est largement en dessous du seuil habituel de 0.05 ,cela signifie qu'on peut rejeter l'hypothèse nulle qu'il n'y a pas de corrélation entre les deux variables.es données montrent une corrélation positive et statistiquement significative entre le nombre d'arrestations pour criminalité liée à la drogue et le nombre d'arrestations pour criminalité liée à la violence. Cela suggère que ces deux types de criminalité sont liés d'une certaine manière. 
+
+On va passer à la causalité de ces deux variables.
+Ce n'est pas quelque chose de tranché mais on peut prouver la dépendance de la variable violent_felony à drug_felony
+
+```{r}
+lm(donnees$violent_felony ~ donnees$drug_felony)
+```
+ Le coefficient associé à drug_felony (1.004) montre le changement estimé dans violent_felony pour une augmentation d'une unité dans drug_felony. En d'autres termes, pour chaque augmentation d'une unité dans le nombre de crimes liés à la drogue, le nombre de crimes violents augmenterait en moyenne de 1.004 unités.
+
+
