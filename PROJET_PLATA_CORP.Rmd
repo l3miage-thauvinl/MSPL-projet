@@ -8,11 +8,11 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-Existe-t-il une corrélation entre le taux de criminalité liée à la drogue et le taux liée à la violence ? Dans quelle mesure la criminalité liée à la drogue influence-t-elle la criminalité liée à la violence ?
+Existe-t-il une corrélation entre le taux de criminalité liée à la drogue (drug felony) et le taux liée à la violence(violent felony) ? Dans quelle mesure la criminalité liée à la drogue influence-t-elle la criminalité liée à la violence ?
 
 1-Chargement des packages
 ```{r}
-
+library(dplyr)
 library(readr)
 library(tidyverse)
 library(ggplot2)
@@ -28,10 +28,7 @@ Data <- read_delim("adult-arrests-by-county-beginning-1970.csv",delim=",")
 ```
 NB: On s'assure bien du typage des données.
 
-```{r}
-names(Data)
-```
-On vérifie les types de données et les valeurs manquantes, et on crée deux nouvelles colonnes, en s'assurant du typage bla bla
+On vérifie les types de données et les valeurs manquantes.On crée deux nouvelles colonnes, en s'assurant du typage tidy de nos variables : drug felony et violent felony.
 ```{r}
 str(Data)
 summary(Data)
@@ -41,7 +38,7 @@ donnees$drug_felony <- as.numeric(Data$"Drug Felony")
 donnees$violent_felony <- as.numeric(Data$"Violent Felony")
 
 ```
-
+On souhaite visualiser l'évolution de nos variables, drug felony et violent felony, au cours du temps sur un même graphique. On a choisi de réaliser un graphe simple ayant en ordonnée le nombre de délits de chacune de nos varibales et en abscisse les années (1970-2019).
 
 
 ```{r}
@@ -62,7 +59,22 @@ ggplot(donnees_long_sum, aes(x = Year, y = Count, color = Type_of_Crime)) +
        y = "Nombre de délits",
        color = "Type de Crime")
 ```
-pour l'analyse de ce graphe avant les annee 1990, o npeut dire qi'il n y pas bcp d'arrestations car pas bcp de pression sur la police de war on drugs.
+On peut remarquer que les deux variables suivent des tendances similaires aprés 1990. Avant cela, il y avait peu dobservations de la variable drug felony, contrairement à celle de violent felony. Donc nous faisons notre études sur ces deux intervalles de temps differents. 
+Pour expliquer ce changement de tendances, on a établie une timeline:
+
+Années 1960-70 : Les États-Unis constatent une augmentation de l'usage des drogues au milieu du mouvement de contre-culture. Le président Nixon déclare que l'abus de drogues est "l'ennemi public numéro un" en 1971, ce qui mène à un accent sur des politiques antidrogues strictes.
+1973 : L'État de New York promulgue les lois Rockefeller sur la drogue, imposant de lourdes peines pour possession et vente de narcotiques, ayant un impact significatif sur les arrestations liées à la drogue et sur les populations carcérales.
+1975 : New York fait face à une grave crise fiscale conduisant à des coupes dans les services, y compris la police, pendant une période d'augmentation des taux de criminalité et d'instabilité économique.
+Les années 1980 :
+
+Début des années 1980 : La prévalence du crack commence à augmenter, conduisant à une hausse de la consommation de drogues et des crimes associés.
+Milieu des années 1980 : Une augmentation notable des décès liés à la drogue indique une consommation plus élevée, avec une forte augmentation des arrestations pour délits liés à la drogue à New York. Cette période voit une hausse des crimes liés à la propriété, tels que les cambriolages et les vols de véhicules, qui sont corrélés à l'augmentation de l'usage des drogues.
+1986-1989 : Les taux d'homicides et les crimes violents augmentent, avec New York faisant face à une grave épidémie de crack et à la criminalité violente associée.
+
+Nos sources: 
+Public Enemy Number One: A Pragmatic Approach to America’s Drug Problem-publié le 29 juin 2016 sur le site Web de Richard Nixon Foundation.
+
+Ainsi,on peut émettre l'hypotese que le peu d'observation de drug felony avant 1990 est dû au fait qu'il n y avait pas autant de pression politique sur les arrestations liés au drogues, et qu'apres 1990, l'evenemment politique War On Drugs explique l'augementation de la variable Drug Felony.
 
 ```{r}
 
@@ -90,4 +102,47 @@ lm(donnees$violent_felony ~ donnees$drug_felony)
 ```
  Le coefficient associé à drug_felony (1.004) montre le changement estimé dans violent_felony pour une augmentation d'une unité dans drug_felony. En d'autres termes, pour chaque augmentation d'une unité dans le nombre de crimes liés à la drogue, le nombre de crimes violents augmenterait en moyenne de 1.004 unités.
 
+av 1990
+```{r}
+library(ggplot2)
+library(dplyr)
+
+# Filtrer les données pour les arrestations avant 1990
+donnees_avant_1990 <- donnees %>% filter(Year < 1990)
+
+# Graphique des arrestations avant 1990
+ggplot(donnees_avant_1990, aes(x = drug_felony, y = violent_felony)) + 
+  geom_point(color = "red") +
+  geom_smooth(aes(x = drug_felony, y = violent_felony), method = lm, se = FALSE, color = "blue") +
+  scale_color_manual(values = c("red")) +
+  theme_minimal() +
+  ggtitle("Arrestations avant 1990")
+
+```
+ap 1990
+```{r}
+library(ggplot2)
+library(dplyr)
+
+# Filtrer les données pour les arrestations avant 1990
+donnees_apres_1990 <- donnees %>% filter(Year >= 1990)
+
+# Graphique des arrestations avant 1990
+ggplot(donnees_apres_1990, aes(x = drug_felony, y = violent_felony)) + 
+  geom_point(color = "red") +
+  geom_smooth(aes(x = drug_felony, y = violent_felony), method = lm, se = FALSE, color = "blue") +
+  scale_color_manual(values = c("red")) +
+  theme_minimal() +
+  ggtitle("Arrestations apres 1990")
+
+```
+taux lin de avant 1990
+```{r}
+
+lm(donnees_avant_1990$violent_felony ~ donnees_avant_1990$drug_felony)
+```
+taux lin de pres 1990
+```{r}
+lm(donnees_apres_1990$violent_felony ~ donnees_apres_1990$drug_felony)
+```
 
