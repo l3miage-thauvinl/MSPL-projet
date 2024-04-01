@@ -1,34 +1,52 @@
 ---
 title: "PROJET_PLATA_CORP"
-author: "Mona OSMAN,Alireza SEYF, Sami MANSOUR, Lola Tosetto"
+author: "Mona OSMAN,Alireza SEYF, Sami MANSOUR, Lola TOSETTO"
 date: "2024-03-16"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+##Présentation de notre Base et Étude
+#Titre
+DCJS Adult Arrests by County
+
+#Source
+Les données utilisées dans notre projet proviennent du Département des services de justice pénale de l'État de New York (DCJS), qui a pour mission d'améliorer la sécurité publique. Le DCJS recueille des données à partir de son système d'historique criminel informatisé (CCH), qui est le référentiel central des informations sur l'historique criminel dans l'État de New York. Le CCH contient les dossiers d'histoire criminelle de toutes les personnes arrêtées et poursuivies depuis 1970.
+
+Les données sur les arrestations d'adultes pour des infractions pouvant faire l'objet de relevés d'empreintes digitales sont collectées à partir de diverses agences tout au long du traitement d'une affaire, depuis l'arrestation initiale jusqu'aux décisions judiciaires. Les infractions pouvant faire l'objet de relevés d'empreintes digitales comprennent les délits graves et les délits mineurs définis dans la loi pénale de l'État de New York, ainsi que les violations spécifiques.Les données sont mises à jour annuellement et peuvent être sujettes à des modifications au fil du temps en raison de l'ajout d'informations manquantes antérieurement.
+
+Il convient de noter que ces données sont limitées aux arrestations d'adultes pour des infractions majeures et mineures pouvant faire l'objet de relevés d'empreintes digitales, et que les demandes d'informations supplémentaires peuvent être adressées au DCJS ou aux agences d'arrestation de l'État ou locales. Ces données sont destinées à permettre au public un accès rapide et facile à des informations publiques, bien que des erreurs humaines ou mécaniques soient possibles.
+
+#Description colonnes
+Un document Data dictionary est fournie avec cette base de donnée, pour expliquer chaque colonne en plus de la recolte de donnée, nous nous focalisons surtout sur les variables Drug Felony (Délits liés aux drogues) qui donne le nombre d'arrestations d'adultes pour des délits liés aux drogues, y compris les infractions relatives aux substances contrôlées et à la marijuana et sur Violent Felony (Délits violents) qui indique le nombre d'arrestations d'adultes pour des délits violents, tels que définis dans la loi pénale de l'État de New York.
+
+
+#Problématique
 Existe-t-il une corrélation entre le taux de criminalité liée à la drogue (drug felony) et le taux liée à la violence(violent felony) ? Dans quelle mesure la criminalité liée à la drogue influence-t-elle la criminalité liée à la violence ?
 
-1-Chargement des packages
+##Chargement des packages
 ```{r}
 library(dplyr)
 library(readr)
 library(tidyverse)
 library(ggplot2)
-library(ggplot2)
 library(tidyr) # Pour pivot_longer
 
 ```
 
-2-Chargement des Données
+##Chargement des Données
 ```{r}
 Data <- read_delim("adult-arrests-by-county-beginning-1970.csv",delim=",")
 
 ```
 NB: On s'assure bien du typage des données.
 
-On vérifie les types de données et les valeurs manquantes.On crée deux nouvelles colonnes, en s'assurant du typage tidy de nos variables : drug felony et violent felony.
+On vérifie les types de données et les valeurs manquantes.On crée deux nouvelles colonnes,pour avoir un bon nommage, en s'assurant du typage tidy de nos variables : drug felony et violent felony.
 ```{r}
 str(Data)
 summary(Data)
@@ -38,8 +56,10 @@ donnees$drug_felony <- as.numeric(Data$"Drug Felony")
 donnees$violent_felony <- as.numeric(Data$"Violent Felony")
 
 ```
-On souhaite visualiser l'évolution de nos variables, drug felony et violent felony, au cours du temps sur un même graphique. On a choisi de réaliser un graphe simple ayant en ordonnée le nombre de délits de chacune de nos varibales et en abscisse les années (1970-2019).
 
+
+##GRAPHES
+On souhaite visualiser l'évolution de nos variables, drug felony et violent felony, au cours du temps sur un même graphique. On a choisi de réaliser un graphe simple ayant en ordonnée le nombre de délits de chacune de nos varibales et en abscisse les années (1970-2019).
 
 ```{r}
 # Transformer les données au format long
@@ -47,7 +67,7 @@ donnees_long <- pivot_longer(donnees,
                              cols = c("drug_felony", "violent_felony"),
                              names_to = "Type_of_Crime",
                              values_to = "Count")
-donnees_long_sum <- aggregate(Count ~ Year + Type_of_Crime, data = donnees_long, sum)
+donnees_long_sum <- aggregate(Count ~ Year + Type_of_Crime, data = donnees_long, sum) #aggregation sur les années qui fait la somme de drug_felony et violent_felony pour chaque année.
 
 # Créer le graphique
 ggplot(donnees_long_sum, aes(x = Year, y = Count, color = Type_of_Crime)) +
@@ -59,7 +79,7 @@ ggplot(donnees_long_sum, aes(x = Year, y = Count, color = Type_of_Crime)) +
        y = "Nombre de délits",
        color = "Type de Crime")
 ```
-On peut remarquer que les deux variables suivent des tendances similaires aprés 1990. Avant cela, il y avait peu dobservations de la variable drug felony, contrairement à celle de violent felony. Donc nous faisons notre études sur ces deux intervalles de temps differents. 
+On peut remarquer que les deux variables suivent des tendances similaires aprés 1990. Avant cela, il y avait peu d'observations de la variable drug felony, contrairement à celle de violent felony. Donc nous faisons notre étude sur ces deux intervalles de temps differents. 
 Pour expliquer ce changement de tendances, on a établie une timeline:
 
 Années 1960-70 : Les États-Unis constatent une augmentation de l'usage des drogues au milieu du mouvement de contre-culture. Le président Nixon déclare que l'abus de drogues est "l'ennemi public numéro un" en 1971, ce qui mène à un accent sur des politiques antidrogues strictes.
@@ -76,8 +96,9 @@ Public Enemy Number One: A Pragmatic Approach to America’s Drug Problem-publi�
 
 Ainsi,on peut émettre l'hypotese que le peu d'observation de drug felony avant 1990 est dû au fait qu'il n y avait pas autant de pression politique sur les arrestations liés au drogues, et qu'apres 1990, l'evenemment politique War On Drugs explique l'augementation de la variable Drug Felony.
 
-```{r}
+Pour commencer, on utilise un graphique pour visualiser la ligne de régression linéaire, pour l'intervalle d'années de bases (1970-1990)
 
+```{r}
 # Nuage de points pour visualiser la relation
 ggplot() + 
   geom_point(data = donnees, aes(x = drug_felony, y = violent_felony, color = "red")) +
@@ -86,27 +107,11 @@ ggplot() +
   theme_minimal()
 
 ```
-Ligne de tendance (ligne bleue) : La ligne bleue représente la ligne de régression linéaire, qui est le meilleur ajustement linéaire pour les points de données. Elle indique la tendance générale des données : dans ce cas, une tendance positive indique que, généralement, à mesure que le nombre de délits liés à la drogue augmente, le nombre de délits violents tend également à augmenter
+Ligne de tendance (La ligne bleue) représente la ligne de régression linéaire, qui est le meilleur ajustement linéaire pour les points de données. Elle indique la tendance générale des données : dans ce cas, une tendance positive indique que, généralement, à mesure que le nombre de délits liés à la drogue augmente, le nombre de délits violents tend également à augmenter.
+Ainsi, on décide de faire deux cas d'études differents sur les intervalles [1970,1990] et [1990,2019], et cela commence par refaire le graphe precents avec ces nouvelles contraintes pour observer le nuage de points.
 
 
 ```{r}
-cor.test(donnees$drug_felony, donnees$violent_felony)
-```
-Le coefficient de corrélation de Pearson est de 0.8754197. Cette valeur est très proche de 1, ce qui indique une forte corrélation positive entre les deux variables. La valeur p est inférieure à 2.2e-16, ce qui est largement en dessous du seuil habituel de 0.05 ,cela signifie qu'on peut rejeter l'hypothèse nulle qu'il n'y a pas de corrélation entre les deux variables.es données montrent une corrélation positive et statistiquement significative entre le nombre d'arrestations pour criminalité liée à la drogue et le nombre d'arrestations pour criminalité liée à la violence. Cela suggère que ces deux types de criminalité sont liés d'une certaine manière. 
-
-On va passer à la causalité de ces deux variables.
-Ce n'est pas quelque chose de tranché mais on peut prouver la dépendance de la variable violent_felony à drug_felony
-
-```{r}
-lm(donnees$violent_felony ~ donnees$drug_felony)
-```
- Le coefficient associé à drug_felony (1.004) montre le changement estimé dans violent_felony pour une augmentation d'une unité dans drug_felony. En d'autres termes, pour chaque augmentation d'une unité dans le nombre de crimes liés à la drogue, le nombre de crimes violents augmenterait en moyenne de 1.004 unités.
-
-av 1990
-```{r}
-library(ggplot2)
-library(dplyr)
-
 # Filtrer les données pour les arrestations avant 1990
 donnees_avant_1990 <- donnees %>% filter(Year < 1990)
 
@@ -117,32 +122,56 @@ ggplot(donnees_avant_1990, aes(x = drug_felony, y = violent_felony)) +
   scale_color_manual(values = c("red")) +
   theme_minimal() +
   ggtitle("Arrestations avant 1990")
-
 ```
-ap 1990
-```{r}
-library(ggplot2)
-library(dplyr)
 
-# Filtrer les données pour les arrestations avant 1990
+```{r}
+# Filtrer les données pour les arrestations apres 1990
 donnees_apres_1990 <- donnees %>% filter(Year >= 1990)
 
-# Graphique des arrestations avant 1990
+# Graphique des arrestations apres 1990
 ggplot(donnees_apres_1990, aes(x = drug_felony, y = violent_felony)) + 
   geom_point(color = "red") +
   geom_smooth(aes(x = drug_felony, y = violent_felony), method = lm, se = FALSE, color = "blue") +
   scale_color_manual(values = c("red")) +
   theme_minimal() +
   ggtitle("Arrestations apres 1990")
-
 ```
-taux lin de avant 1990
+##TESTS 
+#Test correlation pour [1970,1990]
 ```{r}
+cor.test(donnees_avant_1990$drug_felony, donnees_avant_1990$violent_felony)
+```
 
+#Test correlation pour [1990,2019]
+```{r}
+cor.test(donnees_apres_1990$drug_felony, donnees_apres_1990$violent_felony)
+```
+Le coefficient de corrélation de Pearson est de 0.8515025 pour les données avant 1990, et celui d'après 1990 est 0.92
+Ces valeurs sont très proche de 1, ce qui indique une forte corrélation positive entre les deux variables. La valeur p est inférieure à 2.2e-16, ce qui est largement en dessous du seuil habituel de 0.05 ,cela signifie qu'on peut rejeter l'hypothèse nulle qu'il n'y a pas de corrélation entre les deux variables.
+En plus, le coefficient de correlation a augmenté entre ces deux intervalles, ce qui montre l'évolution de leur relation.
+Ces données montrent une corrélation positive et statistiquement significative entre le nombre d'arrestations pour criminalité liée à la drogue et le nombre d'arrestations pour criminalité liée à la violence. Cela suggère que ces deux types de criminalité sont liés d'une certaine manière. 
+
+
+On va passer à la causalité de ces deux variables.
+Ce n'est pas quelque chose de tranché mais on peut prouver la dépendance de la variable violent_felony à drug_felony pour ces deux intervalles
+
+
+
+#Test de regression linéaire avant 1990
+```{r}
 lm(donnees_avant_1990$violent_felony ~ donnees_avant_1990$drug_felony)
 ```
-taux lin de pres 1990
+Le test de régression linéaire montre que le modèle est statistiquement significatif (p-value < 2.2e-16), ce qui confirme qu'il y a une relation linéaire entre les délits liés aux drogues et les crimes violents avant 1990.
+
+#Test de regression linéaire après 1990
 ```{r}
 lm(donnees_apres_1990$violent_felony ~ donnees_apres_1990$drug_felony)
 ```
+Le test de régression linéaire montre également une forte significativité statistique (p-value < 2.2e-16), confirmant ainsi la présence d'une relation linéaire entre les délits liés aux drogues et les crimes violents après 1990.
+Cependant le coefficient du taux de regression linéaire a diminué au fil de temps, on peut expliquer cette diminution par plusieurs facteur possibles: il se peut qu'après 1990 des facteurs de confusion supplémentaires soient entrés en jeu, affectant la relation entre drug-felony et violent_felony. Ces facteurs de confusion pourraient inclure des changements dans les politiques de sécurité, l'accès aux soins de santé mentale, ou d'autres facteurs socio-économiques qui n'ont pas été pris en compte dans le modèle de régression linéaire.
 
+##CONCLUSION
+Les résultats des tests de corrélation et des modèles de régression linéaire indiquent une relation positive significative entre les drug felony et violent felony, tant avant qu'après 1990 dans l'État de New York. Cependant, il est important de noter que la corrélation entre ces deux types de crimes semble être devenue encore plus forte après 1990.
+
+Cette corrélation ne doit pas être interprétée comme une preuve de causalité directe. Cependant, elle suggère fortement qu'il existe un lien entre drug_felony et violent_felony, qui peut être influencé par divers facteurs socio-économiques, politiques et culturels. Par exemple, la disponibilité accrue de drogues illicites peut conduire à une augmentation des activités criminelles, y compris les crimes violents, tandis que les politiques de lutte contre la drogue et les programmes de prévention peuvent avoir un impact sur ces tendances.
+En conclusion,nous ne pouvons pas refuter l'hypothèse posé au début de cette étude, mais on ne pourra pas l'accepter non plus même si les résultats obtenus soulignent l'importance de politiques publiques qui abordent à la fois les problèmes de drogue et de criminalité violente, tout en reconnaissant les dynamiques complexes qui sous-tendent leur relation.
