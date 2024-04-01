@@ -1,12 +1,10 @@
 # MSPL-projet
 
-hello 
+L3 MIAGE Groupe TD2
 
-on est nous
+PROJET PLATA CORPORATION
 
-- Mona
-- Lola
-- Samy
-- Alireza
-
-bye bye :))
+- Mona OSMAN
+- Lola TOSETTO
+- Alireza SEYF
+- Sami MANSOUR
