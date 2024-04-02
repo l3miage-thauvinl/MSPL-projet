@@ -3,8 +3,9 @@ title: "PROJET_PLATA_CORP"
 author: "Mona OSMAN,Alireza SEYF, Sami MANSOUR, Lola TOSETTO"
 date: "2024-03-16"
 output:
-  pdf_document: default
+  word_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
